@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Noodleflow Strategic Onboarding</title>
+<style>
+:root{
+  --bg:#f4f5ef;
+  --paper:#ffffff;
+  --ink:#122019;
+  --muted:#6e766f;
+  --line:#dfe4dc;
+  --soft:#edf1ea;
+  --green:#1f7049;
+  --green2:#dff2e7;
+  --navy:#18313b;
+  --amber:#a56a13;
+  --amber2:#fff1ce;
+  --red:#a5483d;
+  --shadow:0 24px 80px rgba(21,34,27,.10);
+  --radius:22px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 10% 0%, rgba(31,112,73,.10), transparent 28%),
+    radial-gradient(circle at 95% 10%, rgba(24,49,59,.08), transparent 25%),
+    var(--bg);
+}
+button,input,textarea{font:inherit}
+.app{min-height:100vh;display:grid;grid-template-columns:270px 1fr}
+.sidebar{
+  background:rgba(255,255,255,.82);
+  border-right:1px solid var(--line);
+  backdrop-filter:blur(16px);
+  padding:28px 20px;
+  position:sticky;top:0;height:100vh;
+}
+.brand{display:flex;align-items:center;gap:12px;font-weight:850;font-size:21px;margin:0 8px 30px}
+.logo{width:38px;height:38px;border-radius:13px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:900}
+.progress-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8b938d;font-weight:800;margin:0 8px 12px}
+.steps{display:grid;gap:8px}
+.step{
+  display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;
+  padding:11px 10px;border-radius:14px;color:#6f7871;font-size:13px;font-weight:700;
+}
+.step .dot{
+  width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  background:var(--soft);font-size:12px;
+}
+.step.active{background:var(--ink);color:#fff}
+.step.active .dot{background:#fff;color:var(--ink)}
+.step.done .dot{background:var(--green2);color:var(--green)}
+.sidebar-note{
+  position:absolute;left:20px;right:20px;bottom:22px;background:#fff;border:1px solid var(--line);
+  border-radius:16px;padding:14px;font-size:12px;color:var(--muted);line-height:1.45;
+}
+.sidebar-note strong{display:block;color:var(--ink);margin-bottom:4px}
+.main{padding:26px 34px 50px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.topbar small{color:var(--muted);font-weight:700}
+.topbar .actions{display:flex;gap:10px}
+.btn{
+  border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 15px;border-radius:12px;
+  font-weight:800;cursor:pointer;
+}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.shell{max-width:1220px;margin:0 auto}
+.stage{
+  background:var(--paper);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.stage-head{
+  padding:28px 30px 22px;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:20px;align-items:flex-start;
+}
+.kicker{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-weight:900}
+h1{font-size:34px;line-height:1.06;letter-spacing:-.045em;margin:8px 0 10px}
+.lede{font-size:15px;color:var(--muted);line-height:1.55;max-width:760px;margin:0}
+.stage-number{
+  white-space:nowrap;background:var(--soft);border-radius:999px;padding:9px 12px;font-size:12px;font-weight:850;color:#667068;
+}
+.stage-body{padding:28px 30px 30px}
+.screen{display:none}.screen.active{display:block}
+.choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.choice{
+  border:1px solid var(--line);background:#fff;border-radius:18px;padding:18px;text-align:left;cursor:pointer;
+  min-height:150px;transition:.18s ease;position:relative;
+}
+.choice:hover{transform:translateY(-2px);box-shadow:0 18px 45px rgba(20,33,26,.08)}
+.choice.selected{border-color:#8db5a0;background:#f4fbf6;box-shadow:inset 0 0 0 1px #8db5a0}
+.choice .icon{font-size:24px;margin-bottom:14px}
+.choice h3{margin:0 0 7px;font-size:17px;letter-spacing:-.02em}
+.choice p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+.choice .check{
+  position:absolute;right:13px;top:13px;width:24px;height:24px;border-radius:50%;
+  border:1px solid var(--line);display:grid;place-items:center;font-size:12px;color:transparent;
+}
+.choice.selected .check{background:var(--green);border-color:var(--green);color:#fff}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:grid;gap:7px}
+.field.full{grid-column:1/-1}
+label{font-size:12px;font-weight:850;color:#536059}
+input,textarea,select{
+  width:100%;border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:#fff;outline:none;color:var(--ink)
+}
+input:focus,textarea:focus,select:focus{border-color:#8db5a0;box-shadow:0 0 0 3px rgba(31,112,73,.08)}
+textarea{min-height:120px;resize:vertical}
+.pill-row{display:flex;flex-wrap:wrap;gap:9px}
+.pill{
+  border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 12px;cursor:pointer;font-size:13px;font-weight:750
+}
+.pill.selected{background:var(--ink);color:#fff;border-color:var(--ink)}
+.helper{font-size:12px;color:var(--muted);line-height:1.45}
+.plan-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+.panel{border:1px solid var(--line);border-radius:18px;padding:20px;background:#fff}
+.panel.soft{background:var(--soft)}
+.panel h3{font-size:18px;margin:0 0 6px}
+.panel p{color:var(--muted);font-size:13px;line-height:1.5}
+.plan-title{font-size:26px;font-weight:900;letter-spacing:-.04em;margin:8px 0 10px}
+.plan-row{display:grid;grid-template-columns:160px 1fr;gap:14px;padding:13px 0;border-top:1px solid var(--line)}
+.plan-row:first-of-type{border-top:0}
+.plan-row span{font-size:12px;color:var(--muted);font-weight:800}
+.plan-row strong{font-size:14px}
+.insight{
+  border-left:3px solid var(--green);padding:13px 14px;background:#f5faf7;border-radius:0 14px 14px 0;margin-top:12px
+}
+.insight strong{display:block;margin-bottom:5px}
+.insight small{color:var(--muted);line-height:1.45}
+.rule-list{display:grid;gap:10px;margin-top:12px}
+.rule{
+  display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:start;
+  border:1px solid var(--line);padding:13px;border-radius:14px;background:#fff
+}
+.rule-num{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;font-size:12px;font-weight:850}
+.rule small{color:var(--muted);display:block;margin-top:3px;line-height:1.4}
+.badge{font-size:10px;font-weight:900;border-radius:999px;padding:6px 8px;background:var(--green2);color:var(--green);white-space:nowrap}
+.footer{
+  display:flex;justify-content:space-between;gap:16px;align-items:center;padding:18px 30px;border-top:1px solid var(--line);background:#fbfcfa
+}
+.footer-note{color:var(--muted);font-size:12px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.metric{background:var(--soft);border-radius:15px;padding:14px}
+.metric small{color:var(--muted);font-weight:800}
+.metric strong{display:block;font-size:21px;margin-top:8px}
+.confirm-box{
+  display:flex;gap:12px;align-items:flex-start;background:#f6fbf7;border:1px solid #cce5d6;border-radius:16px;padding:15px;margin-top:16px
+}
+.confirm-box input{width:auto;margin-top:3px}
+.toast{
+  position:fixed;right:26px;bottom:26px;background:var(--ink);color:#fff;padding:13px 16px;border-radius:12px;
+  display:none;z-index:50;font-size:13px;font-weight:750;box-shadow:var(--shadow)
+}
+@media(max-width:980px){
+  .app{grid-template-columns:90px 1fr}
+  .brand span,.step span,.progress-label,.sidebar-note{display:none}
+  .step{grid-template-columns:1fr;justify-items:center}
+  .choice-grid{grid-template-columns:1fr 1fr}
+  .plan-layout{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+  .app{display:block}.sidebar{display:none}.main{padding:14px}
+  .stage-head,.stage-body,.footer{padding-left:18px;padding-right:18px}
+  .choice-grid,.form-grid,.summary-grid{grid-template-columns:1fr}
+  .plan-row{grid-template-columns:1fr;gap:4px}
+  h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">N</div><span>Noodleflow</span></div>
+    <div class="progress-label">Build your plan</div>
+    <div class="steps" id="steps">
+      <div class="step active"><div class="dot">1</div><span>Direction</span></div>
+      <div class="step"><div class="dot">2</div><span>Target</span></div>
+      <div class="step"><div class="dot">3</div><span>Protection</span></div>
+      <div class="step"><div class="dot">4</div><span>Planned moves</span></div>
+      <div class="step"><div class="dot">5</div><span>Context</span></div>
+      <div class="step"><div class="dot">6</div><span>Your plan</span></div>
+    </div>
+    <div class="sidebar-note">
+      <strong>Why we ask</strong>
+      Every answer helps Noodleflow structure your Business Objective, protect what matters, rank scenarios, and propose next steps. Your plan can change over time.
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="shell">
+      <div class="topbar">
+        <small>Strategic onboarding prototype</small>
+        <div class="actions">
+          <button class="btn" id="demoBtn">Load example</button>
+          <button class="btn" id="saveBtn">Save draft</button>
+        </div>
+      </div>
+
+      <section class="stage">
+        <div class="stage-head">
+          <div>
+            <div class="kicker" id="kicker">Step 1 · Direction</div>
+            <h1 id="title">What are you trying to make true?</h1>
+            <p class="lede" id="lede">Choose the one outcome that matters most right now. You can add secondary priorities next.</p>
+          </div>
+          <div class="stage-number" id="stageNumber">1 of 6</div>
+        </div>
+
+        <div class="stage-body">
+          <div class="screen active" data-screen="0">
+            <div class="choice-grid" id="goalChoices">
+              <button class="choice" data-value="Grow sales">
+                <span class="check">✓</span><div class="icon">↗</div><h3>Grow sales</h3>
+                <p>Increase demand, volume, channels, or retail reach.</p>
+              </button>
+              <button class="choice" data-value="Keep more from current sales">
+                <span class="check">✓</span><div class="icon">◎</div><h3>Keep more from current sales</h3>
+                <p>Improve what remains after product, fees, returns, and operating costs.</p>
+              </button>
+              <button class="choice" data-value="Pay myself consistently">
+                <span class="check">✓</span><div class="icon">$</div><h3>Pay myself consistently</h3>
+                <p>Build reliable owner income without destabilizing the business.</p>
+              </button>
+              <button class="choice" data-value="Launch or expand">
+                <span class="check">✓</span><div class="icon">✦</div><h3>Launch or expand</h3>
+                <p>Fund a product launch, retail opportunity, location, or major growth move.</p>
+              </button>
+              <button class="choice" data-value="Build cash and resilience">
+                <span class="check">✓</span><div class="icon">◫</div><h3>Build cash and resilience</h3>
+                <p>Create reserves, reduce pressure, and stop reacting to every surprise.</p>
+              </button>
+              <button class="choice" data-value="Help me diagnose the right goal">
+                <span class="check">✓</span><div class="icon">?</div><h3>Help me diagnose it</h3>
+                <p>I know the business needs to improve, but I am not sure what the first objective should be.</p>
+              </button>
+            </div>
+          </div>
+
+          <div class="screen" data-screen="1">
+            <div class="form-grid">
+              <div class="field">
+                <label>What should the business achieve?</label>
+                <input id="targetValue" placeholder="Example: $2,000,000 in annual sales" />
+              </div>
+              <div class="field">
+                <label>By when?</label>
+                <select id="targetDate">
+                  <option value="">Select a time horizon</option>
+                  <option>Within 90 days</option>
+                  <option>Within 6 months</option>
+                  <option>Within 12 months</option>
+                  <option>By the end of this calendar year</option>
+                  <option>Custom milestone</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label>Any secondary priorities?</label>
+                <input id="secondaryPriorities" placeholder="Optional: Example: build cash while growing sales" />
+                <div class="helper">Your lead objective remains primary when priorities conflict.</div>
+              </div>
+              <div class="field full">
+                <label>How should the plan be funded?</label>
+                <div class="pill-row" data-group="funding">
+                  <button class="pill" data-value="Self-funded from the business">Self-funded</button>
+                  <button class="pill" data-value="Debt is acceptable">Debt is acceptable</button>
+                  <button class="pill" data-value="Outside investment is acceptable">Outside investment is acceptable</button>
+                  <button class="pill" data-value="Undecided">Undecided</button>
+                </div>
+              </div>
+              <div class="field full">
+                <label>When priorities conflict, what should win?</label>
+                <div class="pill-row" data-group="priority">
+                  <button class="pill" data-value="Protect cash first">Protect cash</button>
+                  <button class="pill" data-value="Move faster toward growth">Move faster</button>
+                  <button class="pill" data-value="Protect owner income">Protect owner income</button>
+                  <button class="pill" data-value="Preserve flexibility">Preserve options</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="screen" data-screen="2">
+            <div class="form-grid">
+              <div class="field full">
+                <label>What must Noodleflow protect before anything discretionary happens?</label>
+                <div class="choice-grid" id="protectChoices">
+                  <button class="choice" data-value="Payroll"><span class="check">✓</span><div class="icon">👥</div><h3>Payroll</h3><p>Fund payroll before discretionary allocations.</p></button>
+                  <button class="choice" data-value="Taxes"><span class="check">✓</span><div class="icon">▤</div><h3>Taxes</h3><p>Keep required tax money out of the spendable balance.</p></button>
+                  <button class="choice" data-value="Owner pay"><span class="check">✓</span><div class="icon">◉</div><h3>Owner pay</h3><p>Protect a recurring amount for owner compensation.</p></button>
+                  <button class="choice" data-value="Minimum operating cash"><span class="check">✓</span><div class="icon">▰</div><h3>Operating cushion</h3><p>Maintain a floor for normal business volatility.</p></button>
+                  <button class="choice" data-value="Key inventory"><span class="check">✓</span><div class="icon">▦</div><h3>Key inventory</h3><p>Protect the ability to replenish critical products.</p></button>
+                  <button class="choice" data-value="Debt and fixed commitments"><span class="check">✓</span><div class="icon">⌂</div><h3>Fixed commitments</h3><p>Protect rent, debt, insurance, and other non-negotiables.</p></button>
+<button class="choice" data-value="Custom protected priority"><span class="check">✓</span><div class="icon">＋</div><h3>Something else</h3><p>Add another priority or reserve that matters to how you operate your business.</p></button>
+                </div>
+              </div>
+              <div class="field full">
+                <label>Anything else you want protected?</label>
+                <input id="customProtection" placeholder="Example: Black Friday inventory, trade show reserve, equipment replacement" />
+                <div class="helper">Optional. Operator-defined priorities use the same Noodleflow economic guardrails as system-defined reserves.</div>
+              </div>
+              <div class="field">
+                <label>Minimum cash you want untouched</label>
+                <input id="cashFloor" placeholder="Example: $35,000" />
+              </div>
+              <div class="field">
+                <label>Monthly owner pay to protect</label>
+                <input id="ownerPay" placeholder="Example: $8,000" />
+              </div>
+            </div>
+          </div>
+
+          <div class="screen" data-screen="3">
+            <div class="choice-grid" id="moveChoices">
+              <button class="choice" data-value="Inventory purchase"><span class="check">✓</span><div class="icon">📦</div><h3>Inventory purchase</h3><p>A major reorder, seasonal build, or stock expansion.</p></button>
+              <button class="choice" data-value="New hire"><span class="check">✓</span><div class="icon">＋</div><h3>New hire</h3><p>Add recurring labor cost to remove a bottleneck or support growth.</p></button>
+              <button class="choice" data-value="Product launch"><span class="check">✓</span><div class="icon">✦</div><h3>Product launch</h3><p>Fund product, packaging, marketing, and working-capital needs.</p></button>
+              <button class="choice" data-value="Retail expansion"><span class="check">✓</span><div class="icon">🏬</div><h3>Retail expansion</h3><p>Prepare for trade spend, inventory, receivables, and fulfillment demands.</p></button>
+              <button class="choice" data-value="Equipment replacement"><span class="check">✓</span><div class="icon">⚙</div><h3>Equipment</h3><p>Build cash before an asset fails or becomes obsolete.</p></button>
+              <button class="choice" data-value="Debt reduction"><span class="check">✓</span><div class="icon">↓</div><h3>Debt reduction</h3><p>Use available cash to lower pressure and improve flexibility.</p></button>
+<button class="choice" data-value="Another planned move"><span class="check">✓</span><div class="icon">＋</div><h3>Something else</h3><p>Add another planned investment, commitment, or strategic move unique to your business.</p></button>
+            </div>
+            <div class="form-grid" style="margin-top:18px">
+              <div class="field full">
+                <label>Another move not listed above?</label>
+                <input id="customMove" placeholder="Example: trade show, warehouse move, owner distribution, new channel investment" />
+              </div>
+              <div class="field">
+                <label>Known amount to fund</label>
+                <input id="moveAmount" placeholder="Example: $75,000" />
+              </div>
+              <div class="field">
+                <label>Expected timing</label>
+                <input id="moveTiming" placeholder="Example: October 2026" />
+              </div>
+            </div>
+          </div>
+
+          <div class="screen" data-screen="4">
+            <div class="form-grid">
+              <div class="field full">
+                <label>Tell Noodleflow what the selectors do not capture</label>
+                <textarea id="contextText" placeholder="Example: We may get into two regional retailers this fall. I do not want to raise investor money. I can tolerate lower owner distributions for two months if the opportunity is real, but I will not risk payroll or taxes."></textarea>
+                <div class="helper">Noodleflow uses this text to add nuance to the structured plan. It does not replace the selections.</div>
+              </div>
+              <div class="field full">
+                <label>What does success feel like operationally?</label>
+                <div class="pill-row" data-group="success">
+                  <button class="pill" data-value="I stop worrying about cash every week">Less cash anxiety</button>
+                  <button class="pill" data-value="The business funds its own growth">Self-funded growth</button>
+                  <button class="pill" data-value="I can pay myself on schedule">Consistent owner pay</button>
+                  <button class="pill" data-value="The team can make decisions without me">Less owner dependence</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="screen" data-screen="5">
+            <div class="summary-grid">
+              <div class="metric"><small>Lead objective</small><strong id="sumGoal">—</strong></div>
+              <div class="metric"><small>Target</small><strong id="sumTarget">—</strong></div>
+              <div class="metric"><small>Protected floor</small><strong id="sumFloor">—</strong></div>
+              <div class="metric"><small>Planned move</small><strong id="sumMove">—</strong></div>
+            </div>
+
+            <div class="plan-layout">
+              <div class="panel">
+                <div class="kicker">Noodleflow understood</div>
+                <div class="plan-title" id="planTitle">Build a self-funded growth plan without putting core obligations at risk.</div>
+                <div class="plan-row"><span>Primary objective</span><strong id="planGoal"></strong></div>
+                <div class="plan-row"><span>Time horizon</span><strong id="planTime"></strong></div>
+                <div class="plan-row"><span>Capital posture</span><strong id="planFunding"></strong></div>
+                <div class="plan-row"><span>Protected commitments</span><strong id="planProtect"></strong></div>
+                <div class="plan-row"><span>Known planned move</span><strong id="planMove"></strong></div>
+                <div class="plan-row"><span>Priority rule</span><strong id="planPriority"></strong></div>
+                <div class="insight">
+                  <strong>How this changes Noodleflow</strong>
+                  <small id="planImpact">Scenario rankings, reserve targets, allocation rules, and future recommendations will now be evaluated against this plan.</small>
+                </div>
+              </div>
+
+              <div class="panel soft">
+                <h3>Initial operating policy</h3>
+                <p>This is the structured policy Noodleflow would propose before activating any automation.</p>
+                <div class="rule-list" id="ruleList"></div>
+              </div>
+            </div>
+
+            <div class="confirm-box">
+              <input type="checkbox" id="confirmPlan" />
+              <div>
+                <strong>I confirm that this is the direction Noodleflow should evaluate decisions against.</strong>
+                <div class="helper">Confirming the plan does not activate automation. Proposed reserves and rules remain subject to validation, conflict checks, execution authority, and individual operator review.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <div class="footer-note" id="footerNote">Choose one lead priority to continue.</div>
+          <div>
+            <button class="btn" id="backBtn" style="display:none">Back</button>
+            <button class="btn primary" id="nextBtn" disabled>Continue</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast">Draft saved.</div>
+
+<script>
+let current = 0;
+const data = {
+  goal: "",
+  funding: "",
+  priority: "",
+  protections: [],
+  moves: [],
+  success: ""
+};
+
+const screens = [...document.querySelectorAll(".screen")];
+const steps = [...document.querySelectorAll(".step")];
+const kicker = document.getElementById("kicker");
+const title = document.getElementById("title");
+const lede = document.getElementById("lede");
+const stageNumber = document.getElementById("stageNumber");
+const nextBtn = document.getElementById("nextBtn");
+const backBtn = document.getElementById("backBtn");
+const footerNote = document.getElementById("footerNote");
+const toast = document.getElementById("toast");
+
+const copy = [
+  ["Step 1 · Direction","What are you trying to make true?","Choose the one outcome that matters most right now. You can add secondary priorities next."],
+  ["Step 2 · Target","Turn the ambition into a real target.","Noodleflow can only model a strategy when the outcome, timing, capital posture, and priority are concrete."],
+  ["Step 3 · Protection","What can the plan never put at risk?","These become protected constraints. Noodleflow will reject or flag scenarios that undermine them."],
+  ["Step 4 · Planned moves","What do you already know is coming?","Tell Noodleflow about the investments, obligations, and strategic moves the business must prepare to fund."],
+  ["Step 5 · Context","Add the nuance the selectors cannot capture.","Use your own language. Noodleflow will interpret it alongside your selections and present a plan for confirmation."],
+  ["Step 6 · Confirmation","Here is the plan Noodleflow understood.","Review the structured strategy, protected commitments, and initial operating policy before anything becomes active."]
+];
+
+function updateUI(){
+  screens.forEach((s,i)=>s.classList.toggle("active",i===current));
+  steps.forEach((s,i)=>{
+    s.classList.toggle("active",i===current);
+    s.classList.toggle("done",i<current);
+    s.querySelector(".dot").textContent = i<current ? "✓" : (i+1);
+  });
+  [kicker.textContent,title.textContent,lede.textContent] = copy[current];
+  stageNumber.textContent = `${current+1} of 6`;
+  backBtn.style.display = current===0 ? "none" : "inline-block";
+  nextBtn.textContent = current===5 ? "Confirm my plan" : "Continue";
+  validate();
+  if(current===5) buildPlan();
+}
+
+function validate(){
+  let ok = true;
+  let note = "";
+  if(current===0){ ok=!!data.goal; note="Choose one lead priority to continue."; }
+  if(current===1){
+    ok=!!document.getElementById("targetValue").value.trim() && !!document.getElementById("targetDate").value && !!data.funding && !!data.priority;
+    note="Set a target, timing, funding posture, and priority.";
+  }
+  if(current===2){ ok=data.protections.length>0; note="Choose at least one protected commitment."; }
+  if(current===3){ ok=true; note="Planned moves are optional, but they improve the plan."; }
+  if(current===4){ ok=true; note="Add context if helpful, then review the plan."; }
+  if(current===5){ ok=document.getElementById("confirmPlan").checked; note="Confirm the plan before activation."; }
+  nextBtn.disabled=!ok;
+  footerNote.textContent=note;
+}
+
+function selectSingle(containerSelector, key){
+  document.querySelectorAll(containerSelector+" .choice").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll(containerSelector+" .choice").forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");
+      data[key]=btn.dataset.value;
+      validate();
+    });
+  });
+}
+function selectMulti(containerSelector, key){
+  document.querySelectorAll(containerSelector+" .choice").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      btn.classList.toggle("selected");
+      data[key]=[...document.querySelectorAll(containerSelector+" .choice.selected")].map(b=>b.dataset.value);
+      validate();
+    });
+  });
+}
+selectSingle("#goalChoices","goal");
+selectMulti("#protectChoices","protections");
+selectMulti("#moveChoices","moves");
+
+document.querySelectorAll(".pill-row").forEach(group=>{
+  group.querySelectorAll(".pill").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      group.querySelectorAll(".pill").forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");
+      data[group.dataset.group]=btn.dataset.value;
+      validate();
+    });
+  });
+});
+
+document.querySelectorAll("input,textarea,select").forEach(el=>{
+  el.addEventListener("input",validate);
+  el.addEventListener("change",validate);
+});
+
+nextBtn.addEventListener("click",()=>{
+  if(current<5){ current++; updateUI(); }
+  else{
+    toast.textContent="Plan confirmed. Proposed rules are ready for review.";
+    toast.style.display="block";
+    setTimeout(()=>toast.style.display="none",2400);
+  }
+});
+backBtn.addEventListener("click",()=>{ if(current>0){current--;updateUI();} });
+document.getElementById("confirmPlan").addEventListener("change",validate);
+
+function moneyOrDash(v){ return v.trim() || "Not specified"; }
+function buildPlan(){
+  const target = document.getElementById("targetValue").value.trim();
+  const time = document.getElementById("targetDate").value;
+  const floor = document.getElementById("cashFloor").value.trim();
+  const owner = document.getElementById("ownerPay").value.trim();
+  const moveAmt = document.getElementById("moveAmount").value.trim();
+  const moveTiming = document.getElementById("moveTiming").value.trim();
+  const context = document.getElementById("contextText").value.trim();
+  const secondary = document.getElementById("secondaryPriorities").value.trim();
+  const customProtection = document.getElementById("customProtection").value.trim();
+  const customMove = document.getElementById("customMove").value.trim();
+
+  document.getElementById("sumGoal").textContent = data.goal || "—";
+  document.getElementById("sumTarget").textContent = target || "—";
+  document.getElementById("sumFloor").textContent = floor || owner || "Dynamic";
+  document.getElementById("sumMove").textContent = data.moves[0] || "None yet";
+
+  document.getElementById("planGoal").textContent = `${data.goal}${target ? " — "+target : ""}${secondary ? " | Secondary: "+secondary : ""}`;
+  document.getElementById("planTime").textContent = time || "To be confirmed";
+  document.getElementById("planFunding").textContent = data.funding || "To be confirmed";
+  document.getElementById("planProtect").textContent = [...data.protections.filter(v=>v!=="Custom protected priority"), ...(customProtection ? [customProtection] : [])].join(", ") || "None selected";
+  const allMoves = [...data.moves.filter(v=>v!=="Another planned move"), ...(customMove ? [customMove] : [])];
+  document.getElementById("planMove").textContent = allMoves.length ? `${allMoves.join(", ")}${moveAmt ? " totaling "+moveAmt : ""}${moveTiming ? " by "+moveTiming : ""}` : "No planned move selected";
+  document.getElementById("planPriority").textContent = data.priority || "To be confirmed";
+
+  let title = "Build a plan around the business you are trying to create.";
+  if(data.goal==="Grow sales") title="Grow without letting new sales create a cash problem.";
+  if(data.goal==="Keep more from current sales") title="Improve what the business keeps before chasing more volume.";
+  if(data.goal==="Pay myself consistently") title="Build reliable owner income without destabilizing the business.";
+  if(data.goal==="Launch or expand") title="Fund the expansion without losing control of cash.";
+  if(data.goal==="Build cash and resilience") title="Create enough financial strength to stop operating reactively.";
+  if(data.goal==="Help me diagnose the right goal") title="Diagnose the first objective from the business data before forcing a strategy.";
+  document.getElementById("planTitle").textContent=title;
+
+  let rules = [];
+  if(data.protections.includes("Payroll")) rules.push(["Protect payroll first","Fund payroll before product, growth, or discretionary allocations."]);
+  if(data.protections.includes("Taxes")) rules.push(["Separate tax money","Keep collected and expected taxes outside the safe-to-use balance."]);
+  if(data.protections.includes("Owner pay") || owner) rules.push(["Fund owner pay","Protect "+(owner||"the selected monthly amount")+" before discretionary expansion."]);
+  if(data.protections.includes("Minimum operating cash") || floor) rules.push(["Maintain an operating floor","Do not allow the safe cash position to fall below "+(floor||"the approved minimum")+" without explicit review."]);
+  if(data.protections.includes("Key inventory")) rules.push(["Protect key inventory","Reserve enough to replenish products that materially support the active plan."]);
+  if(customProtection) rules.push(["Protect an operator-defined priority","Create a reserve for "+customProtection+" using the same economic and execution guardrails as any Noodleflow-defined reserve."]);
+  if(allMoves.length) rules.push(["Stage the planned move","Build a reserve for "+allMoves.join(", ").toLowerCase()+(moveAmt?" totaling "+moveAmt:"")+"."]);
+  if(!rules.length) rules.push(["Observe before automating","Use connected data to propose the first reserve and allocation rules for review."]);
+
+  document.getElementById("ruleList").innerHTML = rules.map((r,i)=>`
+    <div class="rule">
+      <div class="rule-num">${i+1}</div>
+      <div><strong>${r[0]}</strong><small>${r[1]}</small></div>
+      <span class="badge">Proposed</span>
+    </div>`).join("");
+
+  let impact = "Scenario rankings, reserve targets, allocation rules, and future recommendations will now be evaluated against this plan.";
+  if(context) impact += " Your written context has been included as operator guidance and should be translated into structured assumptions before activation.";
+  document.getElementById("planImpact").textContent = impact;
+}
+
+document.getElementById("demoBtn").addEventListener("click",()=>{
+  document.querySelector('#goalChoices .choice[data-value="Grow sales"]').click();
+  document.getElementById("targetValue").value="$2,000,000 in annual sales";
+  document.getElementById("targetDate").value="Within 12 months";
+  document.querySelector('[data-group="funding"] .pill[data-value="Self-funded from the business"]').click();
+  document.querySelector('[data-group="priority"] .pill[data-value="Protect cash first"]').click();
+
+  ["Payroll","Taxes","Owner pay","Minimum operating cash","Key inventory"].forEach(v=>{
+    const btn=document.querySelector(`#protectChoices .choice[data-value="${v}"]`);
+    if(!btn.classList.contains("selected")) btn.click();
+  });
+  document.getElementById("cashFloor").value="$35,000";
+  document.getElementById("ownerPay").value="$8,000 per month";
+
+  ["Inventory purchase","Retail expansion","New hire"].forEach(v=>{
+    const btn=document.querySelector(`#moveChoices .choice[data-value="${v}"]`);
+    if(!btn.classList.contains("selected")) btn.click();
+  });
+  document.getElementById("moveAmount").value="$75,000";
+  document.getElementById("moveTiming").value="October 2026";
+  document.getElementById("contextText").value="We may get into two regional retailers this fall. I do not want to raise investor money. I can tolerate lower owner distributions for two months if the opportunity is real, but I will not risk payroll or taxes.";
+  validate();
+  toast.textContent="Example strategy loaded.";
+  toast.style.display="block";
+  setTimeout(()=>toast.style.display="none",1800);
+});
+document.getElementById("saveBtn").addEventListener("click",()=>{
+  toast.textContent="Draft saved.";
+  toast.style.display="block";
+  setTimeout(()=>toast.style.display="none",1800);
+});
+updateUI();
+</script>
+</body>
+</html>
